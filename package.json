@@ -1,0 +1,20 @@
+{
+  "name": "jaqpot-client",
+  "version": "1.0.0",
+  "description": "Jaqpot client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jaqpot",
+    "client",
+    "machine",
+    "learning",
+    "services",
+    "models",
+    "predictions"
+  ],
+  "author": "Pantelis Karatzas for euclia",
+  "license": "ISC"
+}
