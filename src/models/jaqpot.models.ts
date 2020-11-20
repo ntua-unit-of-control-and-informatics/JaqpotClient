@@ -147,18 +147,6 @@ export namespace Dataset {
     }
 }
 
-export namespace Dataset {
-    export enum ExistenceEnum {
-        EXPERIMENTAL = <any> 'EXPERIMENTAL',
-        UPLOADED = <any> 'UPLOADED',
-        CREATED = <any> 'CREATED',
-        TRANFORMED = <any> "TRANSFORMED",
-        PREDICTED = <any> "PREDICTED",
-        DESCRIPTORSADDED = <any> "DESCRIPTORSADDED",
-        FORPREDICTION = <any> "FORPREDICTION"
-    }
-}
-
 export interface FeatureInfo {
     key?: string;
     name?: string;
@@ -278,4 +266,10 @@ export interface Doa {
     modelId?: string;
     doaMatrix?: number[][];
     aValue?: number;
+}
+
+
+export interface Models {
+    total?:Number
+    models?:Array<Model>
 }

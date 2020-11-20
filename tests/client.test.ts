@@ -1,12 +1,12 @@
 import { assert, expect } from "chai";
 import { couldStartTrivia } from "typescript";
 import { IJaqpotClient, JaqpotClientFactory} from '../src/client'
-import {Feature} from '../src/models/jaqpot.models'
+import {Feature, Model, Models} from '../src/models/jaqpot.models'
 
 describe('client', function() {
     const accClient:IJaqpotClient = new JaqpotClientFactory("https://api.jaqpot.org/jaqpot/services").getClient();
 
-    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDU4Nzc5NzEsImlhdCI6MTYwNTg3NDM3MSwianRpIjoiYTc3NmY3YWEtNWVlNS00NTkzLTlmMjUtYmU5YTFhN2Y2MTk4IiwiaXNzIjoiaHR0cDovLzE5Mi4xNjguMTAuMTAwOjMwMTAwL2F1dGgvcmVhbG1zL2phcXBvdCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIyNDI1ZDc2MC0wMThkLTQwOGEtYWUwYi1jZGU0YzU2MzU0YjkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJqYXFwb3QtYXBpIiwic2Vzc2lvbl9zdGF0ZSI6ImRmNDUzZTBkLWRiZjctNDRmMS1iNGI4LWI4M2ZjNGUxNzZiMSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiXCIqXCIiLCIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIHdyaXRlIHJlYWQiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJQYW50ZWxpcyBLYXJhdHphcyIsImdyb3VwcyI6WyIvQWRtaW5pc3RyYXRvciJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.Hl7rO6xD57xWC22BkZrvuZtof0fEk8Qwi356x76iQxKetg5FerIwCVWG3aeL9xFcx4S_bB4svWuDA2I94NLOMQnoXrlWBnsrBCb3i6AUcRcc70BNrjYOtLtpzehvgtxaXHhSyH3GR8b1xvo7K3EZtDMwWI3eUF3j1QD3UkcTgTO4KIe5kpfxrbROsp_gnVlRMzj6qTWVHCnyiPQwY7BR-5Vfb4jovuLonHBW2WAa6zS7-tk4Um5oGdQM9t9bNqZr5GtUQinZUVRP6QE3G-PPni9BX6ikn1MK0Pe4dxIdvGtDxvRTbmgR7QTE_2u4JOSJwERN65tZz40MkqVRf_MWAw"
+    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDU5MDY5NTcsImlhdCI6MTYwNTg5OTc1OCwiYXV0aF90aW1lIjoxNjA1ODk5NzU3LCJqdGkiOiIwOGYzYmFjMy01NTkxLTQ0YmItYjhmNC1mNzAzM2JkMWZkNGUiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiI5M2ZiYWE2M2MwOGFkMTBlZTZmMGU4YTBjNTA2Njk1YTI5eFVMMWN1TiIsInNlc3Npb25fc3RhdGUiOiI0NzkyNWRkNC1lODEyLTQzY2EtOWNmNS0xMTliZGQ4ZWZlZmEiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.CxWEjZd5-LQoNh7KlGDY9iFjpg4p8U7AYKl-bQoldBhSQ4F5PKJfPinzRoTKErswNite1GExfKfCwfCmUlB0F0xWeFENnJujVXk9HKVChEV0OLaWD45TF2l-uz6UELEwwxUYDU6SYCOIJvvGt9YpYo4-ygRb857jzTDdpmZWdcMJ96xh9TO6XjpMIVFBob1Dy-EShuNZME8s9s3l8Dd1urIm6foY7GoGcGWQDN6XLSqeklfXzCKlh7K0NEVGhzBY9TiDNyQgV75T-ldnslcTtjlHMkMOuhm0Q1Td6V0l6-DKV80KJqNhPKyXugbv9v1-fOpznBnqlWOz76kJiSvgKg"
 
     it('Testing get feature', function() {
         accClient.getFeature("0829974ce50646d1a262dab15ffb2950", token).then(
@@ -15,6 +15,43 @@ describe('client', function() {
                 expect(resp._id).to.equal("0829974ce50646d1a262dab1")
             }
         )
+
+        // accClient.getModelById("OX2cWB4lItav1ITof041", token).then(
+        //     (resp:Model) =>{
+        //         console.log(resp)
+        //         expect(resp._id).to.equal("BCrXvYs3BQV9IBe57cJk")
+        //     }
+        
+        // )
+
+        // feature.then()
+    });
+
+    it('Testing get my models', function() {
+        accClient.getMyModels(token, 0, 10).then(
+            (resp:Models) =>{
+                console.log(resp)
+                resp.models.forEach((m:Model)=>{
+                    accClient.getModelById(m._id, token).then(
+                        (resp:Model) =>{
+                        console.log(resp)
+                        })
+                })
+                expect(resp.total).to.equal(9)
+            }
+        ).catch(err=>{
+            console.log(err)
+        })
+
+        // accClient.getMyModelsById("BCrXvYs3BQV9IBe57cJk", token).then(
+        //     (resp:Model) =>{
+        //         console.log(resp)
+        //         expect(resp._id).to.equal("BCrXvYs3BQV9IBe57cJk")
+        //     }
+        // )
+
         // feature.then()
     });
   });
+
+  
