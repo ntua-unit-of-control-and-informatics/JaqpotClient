@@ -279,3 +279,52 @@ export interface Doa {
     doaMatrix?: number[][];
     aValue?: number;
 }
+
+export interface Task {
+    meta?: MetaInfo;
+
+    ontologicalClasses?: Array<string>;
+
+    visible?: boolean;
+
+    temporary?: boolean;
+
+    featured?: boolean;
+
+    resultUri?: string;
+
+    result?: string;
+
+    percentageCompleted?: number;
+
+    errorReport?: ErrorReport;
+
+    httpStatus?: number;
+
+    duration?: number;
+
+    type?: Task.TypeEnum;
+
+    id?: string;
+
+    _id?: string;
+
+    status?: Task.StatusEnum;
+
+}
+export namespace Task {
+    export enum TypeEnum {
+        TRAINING = <any> 'TRAINING',
+        PREDICTION = <any> 'PREDICTION',
+        PREPARATION = <any> 'PREPARATION',
+        VALIDATION = <any> 'VALIDATION'
+    }
+    export enum StatusEnum {
+        RUNNING = <any> 'RUNNING',
+        COMPLETED = <any> 'COMPLETED',
+        CANCELLED = <any> 'CANCELLED',
+        ERROR = <any> 'ERROR',
+        REJECTED = <any> 'REJECTED',
+        QUEUED = <any> 'QUEUED'
+    }
+}

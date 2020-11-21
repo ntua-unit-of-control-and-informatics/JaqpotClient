@@ -1,20 +1,29 @@
 import { assert, expect } from "chai";
 import { couldStartTrivia } from "typescript";
 import { IJaqpotClient, JaqpotClientFactory} from '../src/client'
-import {Feature} from '../src/models/jaqpot.models'
+import {Dataset, Feature} from '../src/models/jaqpot.models'
 
 describe('client', function() {
-    const accClient:IJaqpotClient = new JaqpotClientFactory("https://api.jaqpot.org/jaqpot/services").getClient();
+    const jaqpotClient:IJaqpotClient = new JaqpotClientFactory("https://api.jaqpot.org/jaqpot/services").getClient();
 
-    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDU4Nzc5NzEsImlhdCI6MTYwNTg3NDM3MSwianRpIjoiYTc3NmY3YWEtNWVlNS00NTkzLTlmMjUtYmU5YTFhN2Y2MTk4IiwiaXNzIjoiaHR0cDovLzE5Mi4xNjguMTAuMTAwOjMwMTAwL2F1dGgvcmVhbG1zL2phcXBvdCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIyNDI1ZDc2MC0wMThkLTQwOGEtYWUwYi1jZGU0YzU2MzU0YjkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJqYXFwb3QtYXBpIiwic2Vzc2lvbl9zdGF0ZSI6ImRmNDUzZTBkLWRiZjctNDRmMS1iNGI4LWI4M2ZjNGUxNzZiMSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiXCIqXCIiLCIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIHdyaXRlIHJlYWQiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJQYW50ZWxpcyBLYXJhdHphcyIsImdyb3VwcyI6WyIvQWRtaW5pc3RyYXRvciJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.Hl7rO6xD57xWC22BkZrvuZtof0fEk8Qwi356x76iQxKetg5FerIwCVWG3aeL9xFcx4S_bB4svWuDA2I94NLOMQnoXrlWBnsrBCb3i6AUcRcc70BNrjYOtLtpzehvgtxaXHhSyH3GR8b1xvo7K3EZtDMwWI3eUF3j1QD3UkcTgTO4KIe5kpfxrbROsp_gnVlRMzj6qTWVHCnyiPQwY7BR-5Vfb4jovuLonHBW2WAa6zS7-tk4Um5oGdQM9t9bNqZr5GtUQinZUVRP6QE3G-PPni9BX6ikn1MK0Pe4dxIdvGtDxvRTbmgR7QTE_2u4JOSJwERN65tZz40MkqVRf_MWAw"
+    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDU4OTgxMTEsImlhdCI6MTYwNTg5MDkxMSwiYXV0aF90aW1lIjoxNjA1ODkwOTExLCJqdGkiOiI1ZWU5NjM3Mi1kM2ZhLTRhMjYtYWFjNS0yNzlmM2FlNzk3NmMiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJhMjAzYzI2MzRmM2ZhZjRkYzVkZGQyMzFjOGYyODJmNDA3WjF6R3hZVCIsInNlc3Npb25fc3RhdGUiOiI3ZjkwMWM2Yi1mZGRhLTRiZjMtYmM4Mi02YzIyOTcyYzQ2NjUiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.kHR5MRn3itCRfboNhVPqbXzDdj8ZGp-5PwWit_XprfZC61lLidukG5D7DgAzO9qeVV3L1P4zO876C40T-uCbMPfAbX-TiChf7x30lhKBeTingdWvgv0jHjBTDsECOr4iiebJKqy2haAeb_I_Uy2IyAsCkdokJr_dKQ5odMvMmW7e2RdY0ZMQxKOoYQPf4_IkKBTXCKbJHybOS47GJBH2FR2XyrDVV69y1lo6Sn2mTbWW2D8O_ZTbuILMnK0VNn2u-viIjMoHR0SBL6KztzY8moMukaJ4cSkh5Uf3AvV2J0hb5y62mqCRR_2nQzMka6QxW9ehbJWgQatfX3-2lAPs9g"
 
     it('Testing get feature', function() {
-        accClient.getFeature("0829974ce50646d1a262dab15ffb2950", token).then(
+        jaqpotClient.getFeature("0829974ce50646d1a262dab15ffb2950", token).then(
             (resp:Feature) =>{
                 console.log(resp)
                 expect(resp._id).to.equal("0829974ce50646d1a262dab1")
             }
-        )
-        // feature.then()
+        ).catch(err=>{console.log(err)})
     });
-  });
+
+    it('Testing get dataset by id', function(){
+        jaqpotClient.getDataset('pmVhd0QtwlLLmTNExyApAY', token).then(
+            (resp:Dataset) =>{
+                console.log(resp)
+                expect(resp._id).to.equal("pmVhd0QtwlLLmTNExyApAY")
+            }
+        ).catch(err=>{console.log(err)})
+    })
+
+});
