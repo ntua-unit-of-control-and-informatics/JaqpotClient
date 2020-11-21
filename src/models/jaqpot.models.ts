@@ -312,6 +312,7 @@ export interface Task {
     status?: Task.StatusEnum;
 
 }
+
 export namespace Task {
     export enum TypeEnum {
         TRAINING = <any> 'TRAINING',
@@ -327,4 +328,9 @@ export namespace Task {
         REJECTED = <any> 'REJECTED',
         QUEUED = <any> 'QUEUED'
     }
+}
+
+export interface Models {
+    total?:Number
+    models?:Array<Model>
 }

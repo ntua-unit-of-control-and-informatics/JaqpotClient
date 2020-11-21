@@ -1,13 +1,15 @@
 import { FeatureConsumer } from "./api/feature.consumer";
 import { DatasetConsumer } from "./api/dataset.consumer";
 import { TaskConsumer } from "./api/task.consumer";
-import { Dataset, Feature, Model, Task } from "./models/jaqpot.models";
+import { Dataset, Feature, Model, Task, Models } from "./models/jaqpot.models";
 import axios, {AxiosInstance, AxiosRequestConfig} from 'axios';
+import { ModelConsumer } from "./api/model.consumer";
 
 
 export interface IJaqpotClient{
     // predict(values:{ [key: string]: any; }, authToken:string):Promise<Dataset>
-    // getMyModels(token:string, authToken:string):Promise<Array<Model>>
+    getModelById(modelId:string, authToken:string):Promise<Model>
+    getMyModels(authToken:string, min:Number, max:Number):Promise<Models>
     // getOrgsModels(organization:string, authToken:string):Promise<Array<Model>>
     getFeature(featId:string, authToken:string):Promise<Feature>
     getDataset(id:string, authToken:string):Promise<Dataset>
@@ -20,6 +22,7 @@ export class JaqpotClient implements IJaqpotClient{
     private _featureConsumer:FeatureConsumer
     private _datasetConsumer:DatasetConsumer
     private _taskConsumer:TaskConsumer
+    private _modelConsumer:ModelConsumer
 
     constructor(
         _jaqpotBase:string
@@ -27,12 +30,14 @@ export class JaqpotClient implements IJaqpotClient{
         , _featConsuner:FeatureConsumer
         , _datasetConsumer:DatasetConsumer
         , _taskConsumer:TaskConsumer
+        , _modelConsumer:ModelConsumer
     ){
         this._basePath = _jaqpotBase
         this._client = axiosInstance
         this._featureConsumer = _featConsuner
         this._datasetConsumer = _datasetConsumer
         this._taskConsumer = _taskConsumer
+        this._modelConsumer = _modelConsumer
     }
 
     // public predict(values:{ [key: string]: any; }, authToken:string):Promise<Dataset>{
@@ -54,6 +59,15 @@ export class JaqpotClient implements IJaqpotClient{
         return this._taskConsumer.getPromiseWithPathId(taskId, authToken)
     }
 
+    public getModelById(modelId:string, authToken:string):Promise<Feature>{
+        return this._modelConsumer.getPromiseWithPathId(modelId, authToken)
+    }
+
+    public getMyModels(authToken:string, min:Number, max:Number):Promise<Models>{
+
+        return this._modelConsumer.getMyModels(authToken, min, max)
+    }
+    // getDataset(id:string, authToken:string):Promise<Dataset>
 
 }
 
@@ -70,7 +84,8 @@ export class JaqpotClientFactory{
         const featConsumer:FeatureConsumer = new FeatureConsumer(axiosC, basePath);
         const datasConsumer:DatasetConsumer = new DatasetConsumer(axiosC, basePath)
         const taskConsumer:DatasetConsumer = new TaskConsumer(axiosC, basePath)
-        this._client = new JaqpotClient(basePath, axiosC, featConsumer, datasConsumer, taskConsumer);
+        const modelConsumer:ModelConsumer = new ModelConsumer(axiosC, basePath);      
+        this._client = new JaqpotClient(basePath, axiosC, featConsumer, datasConsumer, taskConsumer, modelConsumer);
     }
 
     public getClient(){
