@@ -1,9 +1,10 @@
 import { FeatureConsumer } from "./api/feature.consumer";
 import { DatasetConsumer } from "./api/dataset.consumer";
 import { TaskConsumer } from "./api/task.consumer";
-import { Dataset, Feature, Model, Task, Models } from "./models/jaqpot.models";
+import { Dataset, Feature, Model, Task, Models, Doa } from "./models/jaqpot.models";
 import axios, {AxiosInstance, AxiosRequestConfig} from 'axios';
 import { ModelConsumer } from "./api/model.consumer";
+import { DoaConsumer } from "./api/doa.consumer";
 
 
 export interface IJaqpotClient{
@@ -13,6 +14,7 @@ export interface IJaqpotClient{
     // getOrgsModels(organization:string, authToken:string):Promise<Array<Model>>
     getFeature(featId:string, authToken:string):Promise<Feature>
     getDataset(id:string, authToken:string):Promise<Dataset>
+    getModelsDoa(modelId:string, authToken:string):Promise<Doa>
 }
 
 export class JaqpotClient implements IJaqpotClient{
@@ -23,6 +25,7 @@ export class JaqpotClient implements IJaqpotClient{
     private _datasetConsumer:DatasetConsumer
     private _taskConsumer:TaskConsumer
     private _modelConsumer:ModelConsumer
+    private _doaConsumer:DoaConsumer
 
     constructor(
         _jaqpotBase:string
@@ -30,6 +33,7 @@ export class JaqpotClient implements IJaqpotClient{
         , _featConsuner:FeatureConsumer
         , _datasetConsumer:DatasetConsumer
         , _taskConsumer:TaskConsumer
+        , _doaConsumer:DoaConsumer
         , _modelConsumer:ModelConsumer
     ){
         this._basePath = _jaqpotBase
@@ -38,12 +42,13 @@ export class JaqpotClient implements IJaqpotClient{
         this._datasetConsumer = _datasetConsumer
         this._taskConsumer = _taskConsumer
         this._modelConsumer = _modelConsumer
+        this._doaConsumer = _doaConsumer
     }
 
     // public predict(values:{ [key: string]: any; }, authToken:string):Promise<Dataset>{
 
     // }
-    // getMyModels(token:string, authToken:string):Promise<Array<Model>>
+
     // getOrgsModels(organization:string, authToken:string):Promise<Array<Model>>
 
 
@@ -64,8 +69,11 @@ export class JaqpotClient implements IJaqpotClient{
     }
 
     public getMyModels(authToken:string, min:Number, max:Number):Promise<Models>{
-
         return this._modelConsumer.getMyModels(authToken, min, max)
+    }
+
+    public getModelsDoa(modelId:string, authToken:string):Promise<Doa>{
+        return this._doaConsumer.getModelsDoa(modelId, authToken)
     }
     // getDataset(id:string, authToken:string):Promise<Dataset>
 
@@ -83,9 +91,10 @@ export class JaqpotClientFactory{
         const axiosC: AxiosInstance = axios.create(config);
         const featConsumer:FeatureConsumer = new FeatureConsumer(axiosC, basePath);
         const datasConsumer:DatasetConsumer = new DatasetConsumer(axiosC, basePath)
-        const taskConsumer:DatasetConsumer = new TaskConsumer(axiosC, basePath)
-        const modelConsumer:ModelConsumer = new ModelConsumer(axiosC, basePath);      
-        this._client = new JaqpotClient(basePath, axiosC, featConsumer, datasConsumer, taskConsumer, modelConsumer);
+        const taskConsumer:TaskConsumer = new TaskConsumer(axiosC, basePath)
+        const modelConsumer:ModelConsumer = new ModelConsumer(axiosC, basePath);    
+        const doaConsumer:DoaConsumer = new DoaConsumer(axiosC, basePath)  
+        this._client = new JaqpotClient(basePath, axiosC, featConsumer, datasConsumer, taskConsumer, doaConsumer, modelConsumer);
     }
 
     public getClient(){
