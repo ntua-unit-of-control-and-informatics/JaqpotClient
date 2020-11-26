@@ -11,9 +11,11 @@ export interface IJaqpotClient{
     // predict(values:{ [key: string]: any; }, authToken:string):Promise<Dataset>
     getModelById(modelId:string, authToken:string):Promise<Model>
     getMyModels(authToken:string, min:Number, max:Number):Promise<Models>
-    // getOrgsModels(organization:string, authToken:string):Promise<Array<Model>>
+    getOrgsModels(organization:string, min:Number, max:Number, authToken:string):Promise<Models>
     getFeature(featId:string, authToken:string):Promise<Feature>
     getDataset(id:string, authToken:string):Promise<Dataset>
+    predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>
+
     getModelsDoa(modelId:string, authToken:string):Promise<Doa>
 }
 
@@ -49,9 +51,6 @@ export class JaqpotClient implements IJaqpotClient{
 
     // }
 
-    // getOrgsModels(organization:string, authToken:string):Promise<Array<Model>>
-
-
     public getFeature(featId:string, authToken:string):Promise<Feature>{
         return this._featureConsumer.getPromiseWithPathId(featId, authToken)
     }
@@ -69,11 +68,21 @@ export class JaqpotClient implements IJaqpotClient{
     }
 
     public getMyModels(authToken:string, min:Number, max:Number):Promise<Models>{
+
         return this._modelConsumer.getMyModels(authToken, min, max)
+    }
+
+    public getOrgsModels(organization:string, min:Number, max:Number, authToken:string):Promise<Models>{
+
+        return this._modelConsumer.getOrgsModels(organization, min, max, authToken)
     }
 
     public getModelsDoa(modelId:string, authToken:string):Promise<Doa>{
         return this._doaConsumer.getModelsDoa(modelId, authToken)
+    }
+
+    public predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>{
+        return this._modelConsumer.predict(modelId, datasetId, authToken)
     }
     // getDataset(id:string, authToken:string):Promise<Dataset>
 
@@ -92,9 +101,10 @@ export class JaqpotClientFactory{
         const featConsumer:FeatureConsumer = new FeatureConsumer(axiosC, basePath);
         const datasConsumer:DatasetConsumer = new DatasetConsumer(axiosC, basePath)
         const taskConsumer:TaskConsumer = new TaskConsumer(axiosC, basePath)
-        const modelConsumer:ModelConsumer = new ModelConsumer(axiosC, basePath);    
+        const modelConsumer:ModelConsumer = new ModelConsumer(axiosC, basePath);
         const doaConsumer:DoaConsumer = new DoaConsumer(axiosC, basePath)  
         this._client = new JaqpotClient(basePath, axiosC, featConsumer, datasConsumer, taskConsumer, doaConsumer, modelConsumer);
+    
     }
 
     public getClient(){
