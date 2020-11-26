@@ -18,7 +18,7 @@ export class DatasetConsumer extends BaseConsumer<Feature> implements IDatasetCo
             this._jaqpotPath = _jaqpotBase
     }
 
-    public postDataset(data:Dataset, authToken:string):Promise<Dataset>{
+    public postDataset(data:Dataset, authToken:string):Promise< Dataset >{
         let config = {
             headers: {
                 'Content-Type':'application/json',

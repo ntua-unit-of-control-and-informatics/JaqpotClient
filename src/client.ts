@@ -5,6 +5,7 @@ import { Dataset, Feature, Model, Task, Models, Doa } from "./models/jaqpot.mode
 import axios, {AxiosInstance, AxiosRequestConfig} from 'axios';
 import { ModelConsumer } from "./api/model.consumer";
 import { DoaConsumer } from "./api/doa.consumer";
+import {DatasetAdapterFactory, IDatasetAdapterFactory } from "../src/adapter/dataset.adapter"
 
 
 export interface IJaqpotClient{
@@ -14,8 +15,8 @@ export interface IJaqpotClient{
     getOrgsModels(organization:string, min:Number, max:Number, authToken:string):Promise<Models>
     getFeature(featId:string, authToken:string):Promise<Feature>
     getDataset(id:string, authToken:string):Promise<Dataset>
-    predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>
-
+    // predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>
+    predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Dataset>
     getModelsDoa(modelId:string, authToken:string):Promise<Doa>
 }
 
@@ -23,11 +24,12 @@ export class JaqpotClient implements IJaqpotClient{
 
     private _basePath:string;
     private _client: AxiosInstance;
-    private _featureConsumer:FeatureConsumer
-    private _datasetConsumer:DatasetConsumer
-    private _taskConsumer:TaskConsumer
-    private _modelConsumer:ModelConsumer
-    private _doaConsumer:DoaConsumer
+    private _featureConsumer:FeatureConsumer;
+    private _datasetConsumer:DatasetConsumer;
+    private _taskConsumer:TaskConsumer;
+    private _modelConsumer:ModelConsumer;
+    private _doaConsumer:DoaConsumer;
+    private _datasetAdapter:IDatasetAdapterFactory;
 
     constructor(
         _jaqpotBase:string
@@ -37,6 +39,7 @@ export class JaqpotClient implements IJaqpotClient{
         , _taskConsumer:TaskConsumer
         , _doaConsumer:DoaConsumer
         , _modelConsumer:ModelConsumer
+        , _datasetAdapter:IDatasetAdapterFactory
     ){
         this._basePath = _jaqpotBase
         this._client = axiosInstance
@@ -45,6 +48,7 @@ export class JaqpotClient implements IJaqpotClient{
         this._taskConsumer = _taskConsumer
         this._modelConsumer = _modelConsumer
         this._doaConsumer = _doaConsumer
+        this._datasetAdapter = _datasetAdapter
     }
 
     // public predict(values:{ [key: string]: any; }, authToken:string):Promise<Dataset>{
@@ -81,9 +85,51 @@ export class JaqpotClient implements IJaqpotClient{
         return this._doaConsumer.getModelsDoa(modelId, authToken)
     }
 
-    public predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>{
-        return this._modelConsumer.predict(modelId, datasetId, authToken)
+    public predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Dataset>{
+        
+        let ret = this._datasetAdapter.createModelsDataset(modelId, values, authToken).then(
+            (data:Dataset) => {
+                this._datasetConsumer.postDataset(data, authToken).then(
+                    (dataset:Dataset)=>{
+                        console.log(dataset)
+                        this._modelConsumer.predict(modelId, dataset._id, authToken).then(
+                            (pred:Task)=>{
+                                let loop:boolean = true
+                                let percent:number = 0
+                                let data_id:string = ''
+                                console.log(pred)
+                                while(loop){
+                                    setTimeout(() => {
+                                        this._taskConsumer.getPromiseWithPathId(pred._id, authToken).then(
+                                            (tsk:Task) =>{
+                                                console.log(tsk)
+                                                percent = tsk.percentageCompleted
+                                                data_id = tsk.result
+                                        })
+                                        if (percent = 100){
+                                            loop = false
+                                        }
+                                    }, 800)
+                                
+                                }
+                                
+                                return this._datasetConsumer.getPromiseWithPathId(data_id.split('/')[1],authToken).then(resp =>{console.log(resp)})
+                                
+                        })
+                })
+            })
+        
+        var promise = new Promise(function(resolve) {
+            resolve(ret);
+        });
+        
+        return promise;
+        
     }
+
+    // public predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>{
+    //     return this._modelConsumer.predict(modelId, datasetId, authToken)
+    // }
     // getDataset(id:string, authToken:string):Promise<Dataset>
 
 }
@@ -103,7 +149,8 @@ export class JaqpotClientFactory{
         const taskConsumer:TaskConsumer = new TaskConsumer(axiosC, basePath)
         const modelConsumer:ModelConsumer = new ModelConsumer(axiosC, basePath);
         const doaConsumer:DoaConsumer = new DoaConsumer(axiosC, basePath)  
-        this._client = new JaqpotClient(basePath, axiosC, featConsumer, datasConsumer, taskConsumer, doaConsumer, modelConsumer);
+        const datasetAdapter:IDatasetAdapterFactory = new DatasetAdapterFactory(modelConsumer)  
+        this._client = new JaqpotClient(basePath, axiosC, featConsumer, datasConsumer, taskConsumer, doaConsumer, modelConsumer,datasetAdapter);
     
     }
 
