@@ -24,7 +24,7 @@ describe('client', function() {
                 expect(resp._id).to.equal("pmVhd0QtwlLLmTNExyApAY")
             }
         ).catch(err=>{console.log(err)})
-    })
+    });
 
     it('Testing get my models', function() {
         jaqpotClient.getMyModels(token, 0, 10).then(
@@ -41,17 +41,5 @@ describe('client', function() {
         ).catch(err=>{
             console.log(err)
         })
-
-        // accClient.getMyModelsById("BCrXvYs3BQV9IBe57cJk", token).then(
-        //     (resp:Model) =>{
-        //         console.log(resp)
-        //         expect(resp._id).to.equal("BCrXvYs3BQV9IBe57cJk")
-        //     }
-        // )
-
-        // feature.then()
     });
-
-});
-
-  
+})
