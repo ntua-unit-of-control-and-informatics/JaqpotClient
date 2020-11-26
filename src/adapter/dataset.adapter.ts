@@ -30,7 +30,7 @@ export class DatasetAdapterFactory implements IDatasetAdapterFactory{
         return dataset
     }
 
-    public async createModelsDataset(modelId:string, values: { [key: string]: any; }, authToken:string):Dataset{
+    public createModelsDataset(modelId:string, values: { [key: string]: any; }, authToken:string):Dataset{
         let dataset:Dataset = {}
         this._modelConsumer.getPromiseWithPathId(modelId, authToken).then((m:Model) =>{
             m.independentFeatures.forEach(indf=>{
