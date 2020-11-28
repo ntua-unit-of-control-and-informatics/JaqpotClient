@@ -83,14 +83,13 @@ export class ModelConsumer extends BaseConsumer<Model> implements IModelConsumer
     }
 
     public predict(modelId:string, datasetId:string, authToken:string):Promise<Task>{
-        
         let dataset_uri:string = this._jaqpotPath + this._datasetPath + datasetId
 
-        let data = new FormData();
+        let data = new URLSearchParams();
 
-        data.append("dataset_uri", dataset_uri)
-        data.append("visible", "true")
-        
+        data.set("dataset_uri", dataset_uri)
+        data.set("visible", "true")
+
         let config = {
             headers: {
                 'Content-Type':'application/x-www-form-urlencoded',

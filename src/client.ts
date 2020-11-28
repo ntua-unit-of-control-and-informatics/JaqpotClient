@@ -1,7 +1,7 @@
 import { FeatureConsumer } from "./api/feature.consumer";
 import { DatasetConsumer } from "./api/dataset.consumer";
 import { TaskConsumer } from "./api/task.consumer";
-import { Dataset, Feature, Model, Task, Models, Doa } from "./models/jaqpot.models";
+import { Dataset, Feature, Model, Task, Models, Doa, Prediction } from "./models/jaqpot.models";
 import axios, {AxiosInstance, AxiosRequestConfig} from 'axios';
 import { ModelConsumer } from "./api/model.consumer";
 import { DoaConsumer } from "./api/doa.consumer";
@@ -16,7 +16,7 @@ export interface IJaqpotClient{
     getFeature(featId:string, authToken:string):Promise<Feature>
     getDataset(id:string, authToken:string):Promise<Dataset>
     // predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>
-    predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Dataset>
+    predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Prediction>
     getModelsDoa(modelId:string, authToken:string):Promise<Doa>
 }
 
@@ -85,45 +85,79 @@ export class JaqpotClient implements IJaqpotClient{
         return this._doaConsumer.getModelsDoa(modelId, authToken)
     }
 
-    public predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Dataset>{
+    public predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Prediction>{
         
-        let ret = this._datasetAdapter.createModelsDataset(modelId, values, authToken).then(
+        return this._datasetAdapter.createModelsDataset(modelId, values, authToken).then(
             (data:Dataset) => {
                 this._datasetConsumer.postDataset(data, authToken).then(
-                    (dataset:Dataset)=>{
-                        console.log(dataset)
-                        this._modelConsumer.predict(modelId, dataset._id, authToken).then(
-                            (pred:Task)=>{
+                    (dataset:any)=>{
+
+                        this._modelConsumer.predict(modelId, dataset.data._id, authToken).then(
+                            async (pred:any)=>{
+
                                 let loop:boolean = true
                                 let percent:number = 0
                                 let data_id:string = ''
-                                console.log(pred)
+
                                 while(loop){
-                                    setTimeout(() => {
-                                        this._taskConsumer.getPromiseWithPathId(pred._id, authToken).then(
-                                            (tsk:Task) =>{
-                                                console.log(tsk)
-                                                percent = tsk.percentageCompleted
-                                                data_id = tsk.result
-                                        })
-                                        if (percent = 100){
-                                            loop = false
+                                    await new Promise(r => setTimeout(r, 800)).then(
+                                        () =>{
+                                            this.getTask(pred.data._id, authToken).then(
+                                                (tsk:Task) =>{                                                  
+                                                    percent = tsk.percentageCompleted
+                                                    data_id = tsk.result
+                                                    if (percent = 100){
+                                                        loop = false
+                                                        this._datasetConsumer.getDatasetWithParam(data_id.split('/')[1], true,authToken).then(
+                                                            (resp:Dataset)=>{
+                                                                let reverse = {}
+                                                                let predictions = []
+                                                                let prediction = {}
+
+                                                                for (let index in resp.features){
+                                                                    reverse[resp.features[index].key] = resp.features[index].name
+                                                                }
+                                                                for (let index in resp.dataEntry){
+                                                                    for(let i in Object.keys(resp.dataEntry[index]['values'])){
+                                                                        prediction[reverse[i]] = resp.dataEntry[index]['values'][i]
+                                                                    }
+                                                                    predictions.push({
+                                                                        'entryId' : resp.dataEntry[index]['entryId']['name'], 
+                                                                        'values' : prediction 
+                                                                     })
+                                                                     prediction = {}    
+                                                                }
+
+                                                                let del = {
+                                                                    'modelId':modelId,
+                                                                    'dataId':dataset.data._id,
+                                                                    'data':predictions
+                                                                } 
+                                                                // console.log(del)
+                                                                // console.log(del.data[0].values)
+                                                                return del
+
+                                                        })
+                                                    }                                                    
+                                            })
                                         }
-                                    }, 800)
-                                
+                                    )
+                                    
+                                    
                                 }
+                            
                                 
-                                return this._datasetConsumer.getPromiseWithPathId(data_id.split('/')[1],authToken).then(resp =>{console.log(resp)})
                                 
                         })
-                })
+                    })
+            }).then( r =>{
+                var promise = new Promise(function(resolve) {
+                    resolve(r);
+                });
+                console.log(r)
+                return promise
             })
-        
-        var promise = new Promise(function(resolve) {
-            resolve(ret);
-        });
-        
-        return promise;
+        // ret.then(ret=>{console.log('lla',ret)})
         
     }
 

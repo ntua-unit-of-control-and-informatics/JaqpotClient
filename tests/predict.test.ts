@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { IJaqpotClient, JaqpotClientFactory} from "../src/client"
-import {Feature, Model, Models, Dataset} from "../src/models/jaqpot.models"
+import {Feature, Model, Models, Dataset, Prediction} from "../src/models/jaqpot.models"
 import {DatasetAdapterFactory, IDatasetAdapterFactory } from "../src/adapter/dataset.adapter"
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { FeatureConsumer } from "../src/api/feature.consumer";
@@ -26,7 +26,7 @@ describe("predict", function() {
 
     const datasetAdapter:IDatasetAdapterFactory = new DatasetAdapterFactory(modelConsumer)//, datasConsumer, featConsumer)
 
-    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDY0MTY5NDMsImlhdCI6MTYwNjQwOTc0NCwiYXV0aF90aW1lIjoxNjA2NDA5NzQzLCJqdGkiOiI5NWEyMjEzNi03MDYyLTQzNTItODg4Yy1lOTFjYjc4OTEzNWUiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJhZjI0ZGZkYTM2YmE4NDBjZTA2NDZkMmM2NjVhZjIwZTg4WjRaZVdjUiIsInNlc3Npb25fc3RhdGUiOiJiNjE5YTAwYS1lYjgyLTRkOWEtOTZiZS1mZGEzMTQ0OGNjYTQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.HhePRXxcjWO1lkZil84E_2PcGd2vpC8IkmQfk0Y2Q3Y7IqgPOVqN0jnT07dvoQ8Y0jzTXFq46y0zTpCv5u1DttJpSrLxf6WXspBFhAOZ3mwrnTvYc3G1xVKqDur6wa_MirxLAB73YOCoieyVbHZd5VvWa2xJcdH9QhiseTk4iZK__LwLzu-TaJPyroS7F2dT2SApKQYj1OJfvMCE1tgxr6W1Wyy8gmA3uL2CZAcLpaSX-UqmuBl9xdQsTa8IXGSgDcKKsaT00JwHKKaww5WqmjCKM_i4205LaPgYVSga33P5ZrRnCP5mMUj6-yEi83oUnw7GcQlP4tG6MjkQSZsUXA"
+    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDY1MDYxODMsImlhdCI6MTYwNjQ5ODk4NCwiYXV0aF90aW1lIjoxNjA2NDk4OTgzLCJqdGkiOiI0NzI1NTBjMi1kYTI3LTQwMWUtOWYyOS05ZDliOGVjOTBkZmEiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJhYjhmMmZmNjllZjM4MTBmNTc1NGNmOWIzNDg3YWRhOWVkV3RmRW14cSIsInNlc3Npb25fc3RhdGUiOiIyMGIxNWI2Ni1kZjAwLTQxZWEtOWI1Ni1mZjgyYWJmZjNlZjkiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.MmOGOeNwmsKWnTp8oqvfyOvkGo7lrcBGwRE36g32wioIqUIQjgXDBUY2sem9JuuOKTaBJlN5E9JsJ7nTb5155rL8y6OrJJC7fkqSa_XeSOZe3_pd1EjAEpxJoAUgj_jCKiZCTIoRgYkLB1z9e8oJajm5TOgpkV0yahZjG4mZg7kIXGdJ-Tw4eR-N5fhQp2CIDcjs4BjWaCU5qLi9d07cSwXhV8-iYWha8CRIyArvfpGz_DRuxhVwzgSAL93vgMhaB-9hZn-tXT2YkbhXrM5AwPFJaX_oPglDpnpDmQY55jAznyRttvP7ugk-m8kB21glKfmw7TUHt2BLSEIk_zmRkg"
 
 
     // it("Testing adapter", function() {
@@ -134,7 +134,7 @@ describe("predict", function() {
         
         
         jaqpotClient.predict(modelId, arr_vals, token).then(
-            (resp:Dataset) =>{
+            (resp:Prediction) =>{
                 console.log(resp)
                 }).catch(err => {
                     console.log(err)

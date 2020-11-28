@@ -101,6 +101,18 @@ export interface MetaInfo {
     
 }
 
+export interface Prediction {
+    modelId?:string;
+    dataId?:string;
+    data?: Array<Pred>;
+
+}
+
+export interface Pred {
+    entryId?: string;
+    values?: {[key:string] : any};
+}
+
 export interface Dataset {
     meta?: MetaInfo;
 
@@ -127,8 +139,6 @@ export interface Dataset {
     descriptors?: Array<Dataset.DescriptorsEnum>;
 
     existence?: Dataset.ExistenceEnum;
-
-    id?: string;
 
     _id?: string;
 
