@@ -103,9 +103,11 @@ export interface MetaInfo {
 
 export interface Prediction {
     modelId?:string;
-    dataId?:string;
-    data?: Array<Pred>;
-
+    datasetId?:string;
+    data?:Array<{[key:string] : any}>;
+    predictions?:Array<{[key:string] : any}>;
+    // data?: Array<Pred>;
+    // predictions?:Array<Pred>;
 }
 
 export interface Pred {

@@ -16,7 +16,7 @@ export interface IJaqpotClient{
     getFeature(featId:string, authToken:string):Promise<Feature>
     getDataset(id:string, authToken:string):Promise<Dataset>
     // predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>
-    predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Prediction>
+    predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<void | Prediction>
     getModelsDoa(modelId:string, authToken:string):Promise<Doa>
 }
 
@@ -86,88 +86,149 @@ export class JaqpotClient implements IJaqpotClient{
     }
 
     public predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Prediction>{
-        
+
         return this._datasetAdapter.createModelsDataset(modelId, values, authToken).then(
-            (data:Dataset) => {
-                this._datasetConsumer.postDataset(data, authToken).then(
+            (dataset:Dataset) =>{
+                this._datasetConsumer.postDataset(dataset, authToken).then(
                     (dataset:any)=>{
+                        this._modelConsumer.predict(modelId, dataset.data._id, authToken).then((pred:any)=>{
+                                   
+                            this.getTask(pred.data._id, authToken).then(
+                                (tsk:Task) =>{
+                                    function managePrediction(){
+                                        setTimeout(function(task:Task){
 
-                        this._modelConsumer.predict(modelId, dataset.data._id, authToken).then(
-                            async (pred:any)=>{
+                                            let percent = task.percentageCompleted
+                                            let data_id = task.result
+                                            if (percent === 100){
+                                                this._datasetConsumer.getDatasetWithParam(data_id.split('/')[1], true,authToken).then(
+                                                    (resp:Dataset)=>{
+                                                        let prediction: Prediction= {}
 
-                                let loop:boolean = true
-                                let percent:number = 0
-                                let data_id:string = ''
+                                                        prediction.modelId = modelId
+                                                        prediction.datasetId = data_id
+                                                        
+                                                        for(var f in resp.features){
+                                                            console.log(f)
+                                                        }
 
-                                while(loop){
-                                    await new Promise(r => setTimeout(r, 800)).then(
-                                        () =>{
-                                            this.getTask(pred.data._id, authToken).then(
-                                                (tsk:Task) =>{                                                  
-                                                    percent = tsk.percentageCompleted
-                                                    data_id = tsk.result
-                                                    if (percent = 100){
-                                                        loop = false
-                                                        this._datasetConsumer.getDatasetWithParam(data_id.split('/')[1], true,authToken).then(
-                                                            (resp:Dataset)=>{
-                                                                let reverse = {}
-                                                                let predictions = []
-                                                                let prediction = {}
-
-                                                                for (let index in resp.features){
-                                                                    reverse[resp.features[index].key] = resp.features[index].name
-                                                                }
-                                                                for (let index in resp.dataEntry){
-                                                                    for(let i in Object.keys(resp.dataEntry[index]['values'])){
-                                                                        prediction[reverse[i]] = resp.dataEntry[index]['values'][i]
-                                                                    }
-                                                                    predictions.push({
-                                                                        'entryId' : resp.dataEntry[index]['entryId']['name'], 
-                                                                        'values' : prediction 
-                                                                     })
-                                                                     prediction = {}    
-                                                                }
-
-                                                                let del = {
-                                                                    'modelId':modelId,
-                                                                    'dataId':dataset.data._id,
-                                                                    'data':predictions
-                                                                } 
-                                                                // console.log(del)
-                                                                // console.log(del.data[0].values)
-                                                                return del
-
-                                                        })
-                                                    }                                                    
-                                            })
-                                        }
-                                    )
-                                    
-                                    
+                                                        var promise = new Promise(function(resolve, reject) {
+                                                            resolve(prediction);
+                                                            }); 
+                                                        return promise
+                                                    })
+                                            }else{
+                                                managePrediction()
+                                            }
+                                        }, 800)
+                                    }
                                 }
-                            
-                                
-                                
+                            )
                         })
-                    })
-            }).then( r =>{
-                var promise = new Promise(function(resolve) {
-                    resolve(r);
-                });
-                console.log(r)
-                return promise
-            })
-        // ret.then(ret=>{console.log('lla',ret)})
-        
+                })
+            }
+        )
     }
+
+    
+    // private managePrediction(){
+
+    // }
+
+        // return this._datasetAdapter.createModelsDataset(modelId, values, authToken).then(
+        //     (data:Dataset) => {
+        //         this._datasetConsumer.postDataset(data, authToken).then(
+        //             (dataset:any)=>{
+
+        //                 this._modelConsumer.predict(modelId, dataset.data._id, authToken).then(
+                            
+        //                     let retJson: Models= {}
+        //                     retJson.total = Number(response.headers["total"]);
+        //                     retJson.models = response.data
+                
+        //                     var promise = new Promise(function(resolve, reject) {
+        //                         resolve(retJson);
+        //                     });
+                            
+        //                     return promise)}
+        //         )}
+
+            //                 async (pred:any)=>{
+            //                     let loop:boolean = true
+            //                     let percent:number = 0
+            //                     let data_id:string = ''
+            //                     console.log(pred.data)
+
+            //                     while(loop){
+            //                         await new Promise(r => setTimeout(r, 800)).then(
+            //                             () =>{
+            //                                 this.getTask(pred.data._id, authToken).then(
+            //                                     (tsk:Task) =>{                                                  
+            //                                         percent = tsk.percentageCompleted
+            //                                         data_id = tsk.result
+            //                                         if (percent == 100){
+            //                                             loop = false
+            //                                             this._datasetConsumer.getDatasetWithParam(data_id.split('/')[1], true,authToken).then(
+            //                                                 (resp:Dataset)=>{
+            //                                                     let reverse = {}
+            //                                                     let predictions = []
+            //                                                     let prediction = {}
+
+            //                                                     for (let index in resp.features){
+            //                                                         reverse[resp.features[index].key] = resp.features[index].name
+            //                                                     }
+            //                                                     for (let index in resp.dataEntry){
+            //                                                         for(let i in Object.keys(resp.dataEntry[index]['values'])){
+            //                                                             prediction[reverse[i]] = resp.dataEntry[index]['values'][i]
+            //                                                         }
+            //                                                         predictions.push({
+            //                                                             'entryId' : resp.dataEntry[index]['entryId']['name'], 
+            //                                                             'values' : prediction 
+            //                                                          })
+            //                                                          prediction = {}    
+            //                                                     }
+
+            //                                                     let del = {
+            //                                                         'modelId':modelId,
+            //                                                         'dataId':dataset.data._id,
+            //                                                         'data':predictions
+            //                                                     } 
+            //                                                     // console.log(del)
+            //                                                     // console.log(del.data[0].values)
+            //                                                     var promise = new Promise(function(resolve, reject) {
+            //                                                         resolve(del);
+            //                                                       });
+                                                                
+            //                                                     return promise;
+
+            //                                             })
+            //                                         }                                                    
+            //                                 })
+            //                             }
+            //                         )
+            //                         loop = false;
+                                    
+            //                     }     
+            //             })
+            //         })
+            // })
+            // .then( r =>{
+            //     var promise = new Promise(function(resolve) {
+            //         resolve(r);
+            //     });
+            //     console.log(r)
+            //     return promise
+            // })
+        
+    
 
     // public predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>{
     //     return this._modelConsumer.predict(modelId, datasetId, authToken)
     // }
     // getDataset(id:string, authToken:string):Promise<Dataset>
 
+// }
 }
-
 
 export class JaqpotClientFactory{
     
