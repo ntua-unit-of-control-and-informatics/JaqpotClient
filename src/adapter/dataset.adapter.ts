@@ -3,7 +3,6 @@ import { Dataset, EntryId, DataEntry, FeatureInfo, Feature, Model } from '../mod
 
 
 export interface IDatasetAdapterFactory{
-    getDataset():Dataset
     createModelsDataset(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Dataset>
 }
 
@@ -14,12 +13,6 @@ export class DatasetAdapterFactory implements IDatasetAdapterFactory{
     constructor(modelConsumer:ModelConsumer){
             this._modelConsumer = modelConsumer
     }
-
-    public getDataset():Dataset{
-        let dataset:Dataset = {}
-        return dataset
-    }
-
 
     public createModelsDataset(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Dataset>{
         

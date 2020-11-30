@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { IJaqpotClient, JaqpotClientFactory} from "../src/client"
-import {Feature, Model, Models, Dataset} from "../src/models/jaqpot.models"
+import {Feature, Model, Models, Dataset, Prediction} from "../src/models/jaqpot.models"
 import {DatasetAdapterFactory, IDatasetAdapterFactory } from "../src/adapter/dataset.adapter"
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { FeatureConsumer } from "../src/api/feature.consumer";
@@ -26,7 +26,7 @@ describe("predict", function() {
 
     const datasetAdapter:IDatasetAdapterFactory = new DatasetAdapterFactory(modelConsumer)//, datasConsumer, featConsumer)
 
-    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDY0MDA4MzAsImlhdCI6MTYwNjM5MzYzMSwiYXV0aF90aW1lIjoxNjA2MzkzNjMwLCJqdGkiOiI3MTRiYzQxYy1hMGM0LTQzM2ItODk2OC05NmU4YzE4NjkyMDAiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiIyY2JmZTExNzBjZTgwYjQ4OTM5YTNjNzY3M2I2YzEzN2UyQk4ya3VVUiIsInNlc3Npb25fc3RhdGUiOiIwMjUwZTk1Yi05Y2E2LTQwZDQtYTNhNC1kOWVkMjE2OTU3ZDgiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.SuabGEhCXgWI4KmnbfzeczzzLPCE2ShZyNJjg7i05KpTVbz-1rMR1BcSJQRSiviBn60ms0P49NkPqHYM0eaolXw1xFelbovKJ1ZSimL_wNCnvPIOkU5z_9HI4mdMvvknvNrq5L14BXEghTmwxNwii9Zed-sRfwipqEvxXQGHuVQ9OD2YQKh5zNZdvJEfeGyxTwblvpmAq2MAReV4mnazTMbPYgkPTB5ejcqBwnQo9585tRqcNkEOl20fee6oYMB_y72tqCypHe7QM64PqGZWTWf-6TM_wF565Z0jYksujfEioiHwwF7627Tst5RPg3IgMWeX7Yd70qhadFIvBaFDvw"
+    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDY1MDYxODMsImlhdCI6MTYwNjQ5ODk4NCwiYXV0aF90aW1lIjoxNjA2NDk4OTgzLCJqdGkiOiI0NzI1NTBjMi1kYTI3LTQwMWUtOWYyOS05ZDliOGVjOTBkZmEiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJhYjhmMmZmNjllZjM4MTBmNTc1NGNmOWIzNDg3YWRhOWVkV3RmRW14cSIsInNlc3Npb25fc3RhdGUiOiIyMGIxNWI2Ni1kZjAwLTQxZWEtOWI1Ni1mZjgyYWJmZjNlZjkiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.MmOGOeNwmsKWnTp8oqvfyOvkGo7lrcBGwRE36g32wioIqUIQjgXDBUY2sem9JuuOKTaBJlN5E9JsJ7nTb5155rL8y6OrJJC7fkqSa_XeSOZe3_pd1EjAEpxJoAUgj_jCKiZCTIoRgYkLB1z9e8oJajm5TOgpkV0yahZjG4mZg7kIXGdJ-Tw4eR-N5fhQp2CIDcjs4BjWaCU5qLi9d07cSwXhV8-iYWha8CRIyArvfpGz_DRuxhVwzgSAL93vgMhaB-9hZn-tXT2YkbhXrM5AwPFJaX_oPglDpnpDmQY55jAznyRttvP7ugk-m8kB21glKfmw7TUHt2BLSEIk_zmRkg"
 
 
     // it("Testing adapter", function() {
@@ -105,13 +105,36 @@ describe("predict", function() {
 
         const jaqpotClient:IJaqpotClient = new JaqpotClientFactory("https://api.jaqpot.org/jaqpot/services").getClient();
 
-        let dataId = "QiHweJRf80fM9WpEPdQjvv"
         let modelId = "3whTzLV3TyVFLzBJjTs7"
+
+
+        let vals = {}
+        let arr_vals = []
+        vals["Magnetic core"] = 0.2
+        vals["Relaxivity"] = 0.1
+        vals["Max size"] = 0.3
+        vals["Min size"] = 0.1
+        vals["Overall size (nm)"] = 0.1
+        vals["Fe/cell (pg)"] = 0.1
+        vals["B0 (T)"] = 0.1
+        arr_vals.push(vals)
+        
+        vals = {}
+        vals["Magnetic core"] = 0.4
+        vals["Relaxivity"] = 0.5
+        vals["Max size"] = 0.78
+        vals["Min size"] = 0.01
+        vals["Overall size (nm)"] = 45
+        vals["Fe/cell (pg)"] = 35
+        vals["B0 (T)"] = 0
+        arr_vals.push(vals)
+        
         
         // let dat = datasetAdapter.createModelsDataset("3whTzLV3TyVFLzBJjTs7", arr_vals, token)
-
-        jaqpotClient.predict(modelId, dataId, token).then(
-            (resp:Dataset) =>{
+        
+        
+        jaqpotClient.predict(modelId, arr_vals, token).then(
+            (resp:Prediction) =>{
                 console.log(resp)
                 }).catch(err => {
                     console.log(err)

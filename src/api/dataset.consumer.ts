@@ -4,6 +4,7 @@ import { BaseConsumer } from './base.consumer';
 
 export interface IDatasetConsumer{
     getPromiseWithPathId(id:string, authToken:string):Promise< Feature >;
+    getDatasetWithParam(id:string, dataEntry:boolean, authToken:string): Promise<Dataset>;
     postDataset(data:Dataset, authToken:string):Promise< Dataset >;
 }
 
@@ -18,7 +19,19 @@ export class DatasetConsumer extends BaseConsumer<Feature> implements IDatasetCo
             this._jaqpotPath = _jaqpotBase
     }
 
-    public postDataset(data:Dataset, authToken:string):Promise<Dataset>{
+    public getDatasetWithParam(id:string, dataEntry:boolean, authToken:string): Promise<Dataset>{        
+        let config = {
+            headers: {
+                'Content-Type':'application/json',
+                'Authorization': 'Bearer '  + authToken
+            }
+        }
+        return this._client.get(this._jaqpotPath + "/dataset/" + id + "?dataEntries=" + dataEntry.toString(), config).then(resp =>{
+            return resp.data
+        })
+    }
+
+    public postDataset(data:Dataset, authToken:string):Promise< Dataset >{
         let config = {
             headers: {
                 'Content-Type':'application/json',
