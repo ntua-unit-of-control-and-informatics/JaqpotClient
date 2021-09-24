@@ -23,6 +23,29 @@ export class ModelConsumer extends BaseConsumer<Model> implements IModelConsumer
             this._jaqpotPath = _jaqpotBase
     }
 
+
+    public getModelsWithParams(params : URLSearchParams, authToken:string, min:Number, max:Number): Promise<Models>{
+        let config = {
+            params,
+            headers: {
+                'Content-Type':'application/json',
+                'Authorization': 'Bearer '  + authToken
+            }
+        }
+        return this._client.get(this._jaqpotPath + this._modelsPath, config).then(response => {
+            
+            let retJson: Models= {}
+            retJson.total = Number(response.headers["total"]);
+            retJson.models = response.data
+
+            var promise:Promise<Models>  = new Promise(function(resolve, reject) {
+                resolve(retJson);
+              });
+            
+              return promise;
+          })
+    }
+
     public getMyModels(authToken:string, min:Number, max:Number):Promise<Models>{
 
         let params = new URLSearchParams();
@@ -43,13 +66,46 @@ export class ModelConsumer extends BaseConsumer<Model> implements IModelConsumer
             retJson.total = Number(response.headers["total"]);
             retJson.models = response.data
 
-            var promise = new Promise(function(resolve, reject) {
+            var promise:Promise<Models>  = new Promise(function(resolve, reject) {
                 resolve(retJson);
               });
             
               return promise;
           })
 
+        }
+
+
+
+    public getOrgsAndTagModels(organization:string, tag:string, min:Number, max:Number, authToken:string):Promise<Models>{
+
+            let params = new URLSearchParams();
+            params.set("organization", organization);
+            params.set("tag", tag);
+            params.set("min", min.toString());
+            params.set("max", max.toString());
+    
+            let config = {
+                params,
+                headers: {
+                    'Content-Type':'application/json',
+                    'Authorization': 'Bearer '  + authToken
+                }
+            }
+    
+            return this._client.get(this._jaqpotPath + this._modelsPath, config).then(response => {
+                
+                let retJson: Models= {}
+                retJson.total = Number(response.headers["total"]);
+                retJson.models = response.data
+    
+                var promise:Promise<Models>  = new Promise(function(resolve, reject) {
+                    resolve(retJson);
+                });
+                
+                return promise;
+            })
+    
         }
 
     public getOrgsModels(organization:string, min:Number, max:Number, authToken:string):Promise<Models>{
@@ -73,7 +129,7 @@ export class ModelConsumer extends BaseConsumer<Model> implements IModelConsumer
             retJson.total = Number(response.headers["total"]);
             retJson.models = response.data
 
-            var promise = new Promise(function(resolve, reject) {
+            var promise:Promise<Models> = new Promise(function(resolve, reject) {
                 resolve(retJson);
             });
             

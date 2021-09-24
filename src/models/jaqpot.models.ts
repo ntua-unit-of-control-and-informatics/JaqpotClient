@@ -1,6 +1,6 @@
 export interface DataEntry {
-    entryId?: EntryId;
-    values?: { [key: string]: any; };
+    entryId: EntryId;
+    values: { [key: string]: any; };
 }
 
 export interface EntryId {
@@ -115,8 +115,15 @@ export interface Pred {
     values?: {[key:string] : any};
 }
 
+export interface Chempot{
+    modelId?: string;
+    smiles?: string;
+    descriptors?: string;
+    withDoa?:boolean;
+}
+
 export interface Dataset {
-    meta?: MetaInfo;
+    meta: MetaInfo;
 
     ontologicalClasses?: Array<string>;
 
@@ -130,9 +137,9 @@ export interface Dataset {
 
     byModel?: string;
 
-    dataEntry?: Array<DataEntry>;
+    dataEntry: Array<DataEntry>;
 
-    features?: Array<FeatureInfo>;
+    features: Array<FeatureInfo>;
 
     totalRows?: number;
 
@@ -172,12 +179,12 @@ export namespace Dataset {
 }
 
 export interface FeatureInfo {
-    key?: string;
-    name?: string;
+    key: string;
+    name: string;
     units?: string;
     conditions?: { [key: string]: any; };
     category?: FeatureInfo.CategoryEnum;
-    uri?: string;
+    uri: string;
 }
 
 export interface Feature {
@@ -227,7 +234,7 @@ export interface Model {
     transformationModels?: Array<string>;
     linkedModels?: Array<string>;
     id?: string;
-    _id?: string;
+    _id: string;
     onTrash?: boolean;
 }
 
@@ -305,7 +312,7 @@ export interface Task {
 
     resultUri?: string;
 
-    result?: string;
+    result: string;
 
     percentageCompleted?: number;
 
@@ -319,7 +326,7 @@ export interface Task {
 
     id?: string;
 
-    _id?: string;
+    _id: string;
 
     status?: Task.StatusEnum;
 

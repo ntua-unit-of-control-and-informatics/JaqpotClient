@@ -17,21 +17,22 @@ export class DatasetAdapterFactory implements IDatasetAdapterFactory{
     public createModelsDataset(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Dataset>{
         
         return this._modelConsumer.getPromiseWithPathId(modelId, authToken).then((m:Model) =>{
-            let dataset:Dataset = {}
+            let dataset:Dataset = {meta:{}, features:[], dataEntry:[]}
 
-            let dict = m.additionalInfo.independentFeatures
-            let info:FeatureInfo = {}
+            let dict:{ [key: string]: any; } = m.additionalInfo.independentFeatures
+            let info:Partial<FeatureInfo> = {}
             dataset.features = []
             dataset.dataEntry = []
             let cnt:number = 0
-            let reverse = {}
+            let reverse:{ [key: string]: any; } = {}
             
             for (let key in dict){
                 info.uri = key
                 info.key = cnt.toString()
                 info.name = dict[key]
                 reverse[dict[key]] = cnt.toString()
-                dataset.features.push(info)
+                let appendF:FeatureInfo = {key:info.key, name:dict[key], uri:info.uri}
+                dataset.features.push(appendF)
                 info = {}
                 cnt = cnt + 1
             };
@@ -39,9 +40,9 @@ export class DatasetAdapterFactory implements IDatasetAdapterFactory{
             cnt = 0
 
             for (let index in values){
-                let data : DataEntry = {}
+                let data : Partial<DataEntry> = {}
                 let entry : EntryId = {}
-                let vals = {}
+                let vals:{ [key: string]: any; }  = {}
                 let row = values[index]
                 entry.name = cnt.toString()
                 
@@ -51,14 +52,14 @@ export class DatasetAdapterFactory implements IDatasetAdapterFactory{
 
                 data.values = vals
                 data.entryId = entry
-
-                dataset.dataEntry.push(data)
-                data = {}
+                let append:DataEntry = {entryId: data.entryId, values:data.values}
+                dataset.dataEntry.push(append)
+                // let data:Partial<DataEntry> = {}
                 entry = {}
                 cnt = cnt + 1
             };
 
-            var promise = new Promise(function(resolve) {
+            var promise:Promise<Dataset> = new Promise(function(resolve) {
                 resolve(dataset);
               });
             

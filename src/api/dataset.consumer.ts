@@ -8,7 +8,7 @@ export interface IDatasetConsumer{
     postDataset(data:Dataset, authToken:string):Promise< Dataset >;
 }
 
-export class DatasetConsumer extends BaseConsumer<Feature> implements IDatasetConsumer{
+export class DatasetConsumer extends BaseConsumer<Dataset> implements IDatasetConsumer{
 
     private _client : AxiosInstance
     private _jaqpotPath:string;
