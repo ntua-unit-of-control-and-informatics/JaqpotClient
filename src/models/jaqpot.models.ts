@@ -106,7 +106,7 @@ export interface Prediction {
     datasetId?:string;
     data?:Array<{[key:string] : any}>;
     predictions?:Array<{[key:string] : any}>;
-    // data?: Array<Pred>;
+    aValue?: number;
     // predictions?:Array<Pred>;
 }
 
@@ -293,6 +293,7 @@ export namespace BibTeX {
 }
 
 export interface Doa {
+    _id?: string;
     meta?: MetaInfo;
     modelId?: string;
     doaMatrix?: number[][];

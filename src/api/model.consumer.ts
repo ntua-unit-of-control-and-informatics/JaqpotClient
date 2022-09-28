@@ -6,7 +6,7 @@ export interface IModelConsumer{
     getPromiseWithPathId(id:string, token:string):Promise< Model >;
     getMyModels(authToken:string, min:Number, max:Number):Promise<Models>
     getOrgsModels(organization:string, min:Number, max:Number, authToken:string):Promise<Models>
-    predict(modelId:string, datasetId:string, authToken:string):Promise<Task>
+    predict(modelId:string, datasetId:string, authToken:string, doa?:boolean):Promise<Task>
 }
 
 export class ModelConsumer extends BaseConsumer<Model> implements IModelConsumer{
@@ -138,14 +138,17 @@ export class ModelConsumer extends BaseConsumer<Model> implements IModelConsumer
 
     }
 
-    public predict(modelId:string, datasetId:string, authToken:string):Promise<Task>{
+    public predict(modelId:string, datasetId:string, authToken:string, doa?:boolean):Promise<Task>{
         let dataset_uri:string = this._jaqpotPath + this._datasetPath + datasetId
 
         let data = new URLSearchParams();
 
         data.set("dataset_uri", dataset_uri)
         data.set("visible", "true")
-
+        if (typeof doa !== 'undefined') {
+            data.set("doa", doa.toString())
+        }
+        
         let config = {
             headers: {
                 'Content-Type':'application/x-www-form-urlencoded',
@@ -156,5 +159,7 @@ export class ModelConsumer extends BaseConsumer<Model> implements IModelConsumer
         return this._client.post(this._jaqpotPath + this._modelsPath + modelId, data, config)
 
     }
+
+
 
 } 

@@ -1,18 +1,27 @@
 import { assert, expect } from "chai";
 import { couldStartTrivia } from "typescript";
 import { IJaqpotClient, JaqpotClientFactory} from '../src/client'
-import {Feature, Model, Models, Dataset} from '../src/models/jaqpot.models'
+import {Feature, Model, Models, Dataset, Doa} from '../src/models/jaqpot.models'
 
 describe('client', function() {
     const jaqpotClient:IJaqpotClient = new JaqpotClientFactory("https://api.jaqpot.org/jaqpot/services").getClient();
 
-    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDY5MjgyMDgsImlhdCI6MTYwNjkyMTAwOSwiYXV0aF90aW1lIjoxNjA2OTIxMDA4LCJqdGkiOiJmYWY3NWE1Ny1iMzc2LTQyMzUtYjljNi1lZTgwMWY4ZDY4YWEiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiI2MDkxM2RlOWVlMThmYTgyN2Q5Y2YyMGU1MWNhNzJhOWIyUjF1dUVyUCIsInNlc3Npb25fc3RhdGUiOiJmMzA4ZGFlMy1mODFhLTQzYTEtODJmZC0wNzllY2E0YmQzY2YiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.a8xy4fRR0vJdJb7pAGcaAymMcx0ZEeiZY5DhcFFQApnxB1Ch2FIUDpmxs-yqV_qWvppX19ZaW5fEfsyQ-ubC0OEqUfnwqUm0hj2N41GV1yjHpwtwrzbuwI_biZQoAVI0E2mRZ4gGIxiqTSQdEuN3_r3quFAOr7Ysy-1ZZ3JpsM4ok3VWa8GDQlO3BrUzbyan_uCyhQ8_PwdfYGmJ7dqYzwUk8WlxRkhDkCOUXaaO_fpxBid-ECRyeW32LAe54lkgTmle_4hEucgjHoo4NPuJeHIJo_MFaoLBJ3vG_ic_io1aFAtjKcNz3fmAb-YKQjGeXJOtcGRX2Nec4CeE1jqlRg"
+    const token:string = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2NjQ1MzM4NzgsImlhdCI6MTY2NDM2MTA3OCwianRpIjoiMGFjZWE0N2QtOTU4MC00ODFkLTlhNWEtZTM3YjRjZGFlNThmIiwiaXNzIjoiaHR0cDovLzE5Mi4xNjguMTAuMTAwOjMwMTAwL2F1dGgvcmVhbG1zL2phcXBvdCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiI3NjVmM2QyMC03OGFlLTQ3ZGQtOTkyZi01Nzk3YmRmMTVlOTAiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJqYXFwb3QtYXBpIiwic2Vzc2lvbl9zdGF0ZSI6ImUzNDdhZmVjLWY2MDAtNDgzMC04NmVkLWEzY2ZlYjQzOTMxYiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiXCIqXCIiLCIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIHdyaXRlIHJlYWQiLCJzaWQiOiJlMzQ3YWZlYy1mNjAwLTQ4MzAtODZlZC1hM2NmZWI0MzkzMWIiLCJ1cG4iOiJqYXNvbnNvdGkxQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiYWRkcmVzcyI6e30sIm5hbWUiOiJKYXNvbiBTb3Rpcm9wb3Vsb3MiLCJncm91cHMiOltdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqYXNvbnNvdGkxQGdtYWlsLmNvbSIsImdpdmVuX25hbWUiOiJKYXNvbiIsImZhbWlseV9uYW1lIjoiU290aXJvcG91bG9zIiwiZW1haWwiOiJqYXNvbnNvdGkxQGdtYWlsLmNvbSJ9.bE78lH2X-MeVdF_-5HobPlHIMavgybE2hyfHhW3ciqrLUsV_30EmTwQCUhlD2RS8uuIJA_ihfGzB_IqqbuEQUK3fvDPly8lcpBt1nxVdq_BM_unKwRJpPAY39L5JSdwJNBUCblKhPf7z2oAIedrbwBBdePDankhl0cAae8D83jgQqfmIKnDeT7BpZ9Yuqy2sIGFzCWXwfXvjTif22Fr_sbB3AVxyvITL7K5YhwX6avT44cUtMBtB4n-PC7JL_5u5KaxusrjQSLR5IUJwOTH6saxpUtWwUKE2szn9Ua1v0JH-_bgpRrRY9qCxcxAqI1Eon5sMxEWsZZh0Q2IRIQUDLQ"
           
     it('Testing get feature', function() {
         jaqpotClient.getFeature("0829974ce50646d1a262dab15ffb2950", token).then(
             (resp:Feature) =>{
                 // console.log(resp)
                 expect(resp._id).to.equal("0829974ce50646d1a262dab15ffb2950")
+            }
+        ).catch(err=>{console.log(err)})
+    });
+
+    it('Testing get doa', function() {
+        jaqpotClient.getModelsDoa('BDlyeaMrTUowMs5P4Cr4',token).then(
+            (resp:Doa) =>{
+                // console.log(resp)
+                expect(resp._id).to.equal("4kuMVgIdlwi7fA0KSEYg")
             }
         ).catch(err=>{console.log(err)})
     });
@@ -36,7 +45,7 @@ describe('client', function() {
                         // console.log(resp)
                         })
                 })
-                expect(resp.total).to.equal(18)
+                expect(resp.total).to.equal(38)
             }
         ).catch(err=>{
             console.log(err)

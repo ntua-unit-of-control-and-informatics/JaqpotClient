@@ -17,7 +17,7 @@ export interface IJaqpotClient{
     getOrgsModels(organization:string, min:Number, max:Number, authToken:string):Promise<Models>
     getFeature(featId:string, authToken:string):Promise<Feature>
     getDataset(id:string, authToken:string):Promise<Dataset>
-    // predict(modelId:string, datasetId:string, authToken:string):Promise<Dataset>
+    predict_with_doa(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Prediction>
     predict(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Prediction>
     getOrgsTagModels(organization:string,tag:string, min:Number, max:Number, authToken:string):Promise<Models>
     getModelsDoa(modelId:string, authToken:string):Promise<Doa>
@@ -112,6 +112,30 @@ export class JaqpotClient implements IJaqpotClient{
         )
     }
 
+    public predict_with_doa(modelId:string, values: Array<{ [key: string]: any; }>, authToken:string):Promise<Prediction>{
+        return this._doaConsumer.getModelsDoa(modelId, authToken).then(
+            (doa:Doa) =>{
+                let aValue= doa.aValue
+                return this._datasetAdapter.createModelsDataset(modelId, values, authToken).then(
+                    (dataset:Dataset) =>{
+                        return this._datasetConsumer.postDataset(dataset, authToken).then(
+                            (dataset:any)=>{
+                                return this._modelConsumer.predict(modelId, dataset.data._id, authToken, true).then((pred:any)=>{  
+                                    return this.getTask(pred.data._id, authToken).then(
+                                        
+                                        (tsk:Task) =>{                
+                                            return this.managePredictionP(tsk, modelId, authToken, aValue)
+                                    })
+                                })
+                        })
+                })
+            }
+        ).catch(err =>{
+            return err
+        })
+        
+    }
+
     public chempot(chempot:Chempot, authToken:string):Promise<Prediction>{
         return this._chempotConsumer.chempot(chempot, authToken).then((pred:any)=>{  
             return this.getTask(pred.data._id, authToken).then(
@@ -122,8 +146,7 @@ export class JaqpotClient implements IJaqpotClient{
         })
     }
 
-    private managePredictionP(tsk:Task, modelId:string, authToken:string):Promise<Prediction>{
-
+    private managePredictionP(tsk:Task, modelId:string, authToken:string, aValue?:number):Promise<Prediction>{
                 return delay(400).then(()=>{
                     return this.getTask(tsk._id, authToken).then(
                         (tsk:Task) =>{
@@ -162,6 +185,9 @@ export class JaqpotClient implements IJaqpotClient{
                                         })
                                         prediction.data = inputs
                                         prediction.predictions = preds
+                                        if (aValue !== undefined) {
+                                            prediction.aValue = aValue
+                                        }
     
                                         var promise:Promise<Prediction> = new Promise(function(resolve, reject) {
                                             resolve(prediction);
@@ -169,7 +195,7 @@ export class JaqpotClient implements IJaqpotClient{
                                         return promise
                                     })
                             }else{
-                                return this.managePredictionP(tsk, modelId, authToken)
+                                return this.managePredictionP(tsk, modelId, authToken, aValue)
                             } 
                         })
                 }

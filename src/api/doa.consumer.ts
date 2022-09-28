@@ -10,7 +10,7 @@ export class DoaConsumer extends BaseConsumer<Doa> implements IDoaConsumer{
 
     _client:AxiosInstance
     _jaqpotBase:string
-    _doaPath:string = 'doa/'
+    _doaPath:string = '/doa/'
 
     constructor(_httpClient:AxiosInstance, _jaqpotBase:string){
             super(_httpClient, "doa/", _jaqpotBase)
@@ -20,7 +20,7 @@ export class DoaConsumer extends BaseConsumer<Doa> implements IDoaConsumer{
 
     public getModelsDoa(modelId:string, token:string):Promise<Doa>{
         let params = new URLSearchParams();
-        params.set("hasSources", modelId);
+        params.set("hasSources", 'model/' + modelId);
         let config = {
             params,
             headers: {
